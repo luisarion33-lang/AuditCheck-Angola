@@ -32,6 +32,8 @@ Para produção no Vercel, recomenda-se:
 
 ## Instalação Local
 1. `npm install`
-2. `npm run dev`
+2. Para rodar o frontend e o backend simultaneamente:
+   - Opção A (Recomendada): Instale a Vercel CLI (`npm i -g vercel`) e rode `vercel dev`.
+   - Opção B: Rode `npm run server` em um terminal e `npm run dev` em outro.
 
-O servidor iniciará na porta 3000.
+O frontend estará disponível em `http://localhost:5173` e as chamadas de API serão redirecionadas para o backend na porta 3000.

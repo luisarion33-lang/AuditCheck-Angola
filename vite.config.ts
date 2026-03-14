@@ -17,6 +17,9 @@ export default defineConfig(({mode}) => {
     },
     server: {
       hmr: false,
+      proxy: {
+        '/api': 'http://localhost:3000'
+      }
     },
   };
 });
