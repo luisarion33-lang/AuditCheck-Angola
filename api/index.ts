@@ -188,6 +188,17 @@ for (const acc of seedAccounts) {
   insertAccount.run(acc.id, acc.name, acc.class_id, acc.parent_id || null, acc.type);
 }
 
+// Configure Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '/tmp/'); // On Vercel, we can only write to /tmp
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage });
+
 const app = express();
 app.use(express.json());
 
@@ -276,7 +287,7 @@ app.get("/api/journal", authenticateToken, (req: any, res) => {
   res.json(entries);
 });
 
-app.post("/api/journal", authenticateToken, (req: any, res) => {
+app.post("/api/journal", authenticateToken, upload.single('document'), (req: any, res) => {
   const { date, description, items: itemsStr } = req.body;
   const items = typeof itemsStr === 'string' ? JSON.parse(itemsStr) : itemsStr;
   const user = db.prepare("SELECT plan FROM users WHERE id = ?").get(req.user.id) as any;
@@ -301,6 +312,11 @@ app.post("/api/journal", authenticateToken, (req: any, res) => {
     for (const item of items) {
       insertItem.run(entryId, item.account_id, parseFloat(item.debit) || 0, parseFloat(item.credit) || 0);
     }
+    
+    if (req.file) {
+      db.prepare("INSERT INTO documents (entry_id, filename, path, user_id) VALUES (?, ?, ?, ?)").run(entryId, req.file.filename, req.file.path, req.user.id);
+    }
+    
     return entryId;
   });
   try {
